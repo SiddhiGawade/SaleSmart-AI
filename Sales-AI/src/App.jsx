@@ -1,14 +1,37 @@
 
-import React, { useState } from 'react';
+
+import React, { useState, useEffect } from 'react';
 import { Dashboard } from './components';
 import Login from './components/Login';
+import Register from './components/Register';
+import { getToken, clearToken } from './api';
+
 
 
 const App = () => {
   const [user, setUser] = useState(null);
+  const [showRegister, setShowRegister] = useState(false);
+
+  // On mount, check for JWT and keep user logged in (for demo, just check token exists)
+  useEffect(() => {
+    const token = getToken();
+    if (token && !user) {
+      // In a real app, fetch user profile with token
+      setUser('User');
+    }
+  }, []);
+
+  const handleLogout = () => {
+    clearToken();
+    setUser(null);
+  };
 
   if (!user) {
-    return <Login onLogin={setUser} />;
+    return showRegister ? (
+      <Register onRegister={() => setShowRegister(false)} onSwitchToLogin={() => setShowRegister(false)} />
+    ) : (
+      <Login onLogin={setUser} onSwitchToRegister={() => setShowRegister(true)} />
+    );
   }
 
   return (
@@ -25,7 +48,7 @@ const App = () => {
           </div>
           <div className="flex items-center gap-4">
             <span className="text-slate-500 text-sm">{user}</span>
-            <button className="px-4 py-2 rounded bg-blue-100 text-blue-700 font-medium hover:bg-blue-200 transition" onClick={() => setUser(null)}>Logout</button>
+            <button className="px-4 py-2 rounded bg-blue-100 text-blue-700 font-medium hover:bg-blue-200 transition" onClick={handleLogout}>Logout</button>
           </div>
         </div>
       </nav>
